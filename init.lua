@@ -1,10 +1,19 @@
---░▒▓███████▓▒░░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░▒▓██████████████▓▒░       ░▒▓████████▓▒░▒▓██████▓▒░░▒▓███████▓▒░
---░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░░▒▓█▓▒░         ░▒▓█▓▒░  ░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░
---░▒▓█▓▒░░▒▓█▓▒░░▒▓█▓▒▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░░▒▓█▓▒░         ░▒▓█▓▒░  ░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░
---░▒▓█▓▒░░▒▓█▓▒░░▒▓█▓▒▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░░▒▓█▓▒░         ░▒▓█▓▒░  ░▒▓█▓▒░░▒▓█▓▒░▒▓███████▓▒░
---░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▓█▓▒░ ░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░░▒▓█▓▒░         ░▒▓█▓▒░  ░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░
---░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▓█▓▒░ ░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░░▒▓█▓▒░         ░▒▓█▓▒░  ░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░
---░▒▓█▓▒░░▒▓█▓▒░  ░▒▓██▓▒░  ░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░░▒▓█▓▒░         ░▒▓█▓▒░   ░▒▓██████▓▒░░▒▓█▓▒░
+-- ███╗   ██╗██╗   ██╗██╗███╗   ███╗
+-- ████╗  ██║██║   ██║██║████╗ ████║
+-- ██╔██╗ ██║██║   ██║██║██╔████╔██║
+-- ██║╚██╗██║╚██╗ ██╔╝██║██║╚██╔╝██║
+-- ██║ ╚████║ ╚████╔╝ ██║██║ ╚═╝ ██║
+-- ╚═╝  ╚═══╝  ╚═══╝  ╚═╝╚═╝     ╚═╝
+--
+
+--
+--  ██████╗ ███╗   ██╗    ████████╗ ██████╗ ██████╗
+-- ██╔═══██╗████╗  ██║    ╚══██╔══╝██╔═══██╗██╔══██╗
+-- ██║   ██║██╔██╗ ██║       ██║   ██║   ██║██████╔╝
+-- ██║   ██║██║╚██╗██║       ██║   ██║   ██║██╔═══╝
+-- ╚██████╔╝██║ ╚████║       ██║   ╚██████╔╝██║
+--  ╚═════╝ ╚═╝  ╚═══╝       ╚═╝    ╚═════╝ ╚═╝
+--
 
 -- Set <space> as the leader key
 -- See `:help mapleader`
@@ -201,10 +210,28 @@ require("lazy").setup({
 				vim.keymap.set("n", "<Tab>", function()
 					require("codecompanion").toggle()
 				end, { desc = "[C]ode [C]ompanion" }),
+
+				vim.keymap.set("n", "<leader>ca", "<cmd>CodeCompanionActions<CR>", {
+					desc = "[C]ode [O]pen actions",
+				}),
+				vim.keymap.set({ "n", "v" }, "<leader>ce", "<cmd>CodeCompanion /explain<CR>", {
+					desc = "[C]ode [E]xplain line or selection",
+				}),
+				vim.keymap.set({ "n", "v" }, "<leader>cf", "<cmd>CodeCompanion /fix<CR>", {
+					desc = "[C]ode [F]ix line or selection",
+				}),
+				vim.keymap.set({ "n", "v" }, "<leader>cn", function()
+					require("codecompanion").chat()
+				end, { desc = "[C]hat [N]ew" }),
+
+				vim.keymap.set("v", "<Tab>", function()
+					require("codecompanion").toggle()
+				end, { desc = "send selection to Code Companion" }),
+				-- vim.keymap.set({ "n", "v" }, "<leader>cg", function()
+				-- 	local prompts = require("codecompanion").prompt_library
+				-- 	require("codecompanion").prompt_library(prompts["Generate a Commit Message"])
+				-- end),
 			})
-			vim.keymap.set("v", "<Tab>", function()
-				require("codecompanion").toggle()
-			end, { desc = "[C]ode [C]ompanion selection" })
 		end,
 	},
 
@@ -218,40 +245,19 @@ require("lazy").setup({
 			local set = vim.keymap.set
 
 			-- Add or skip cursor above/below the main cursor.
-			set({ "n", "x" }, "bk", function()
+			set({ "n", "x" }, "<leader>k", function()
 				mc.lineAddCursor(-1)
-			end)
-			set({ "n", "x" }, "bj", function()
+			end, { desc = "Add cursor above" })
+			set({ "n", "x" }, "<leader>j", function()
 				mc.lineAddCursor(1)
-			end)
-			set({ "n", "x" }, "<leader><up>", function()
-				mc.lineSkipCursor(-1)
-			end)
-			set({ "n", "x" }, "<leader><down>", function()
-				mc.lineSkipCursor(1)
-			end)
-
-			-- Add or skip adding a new cursor by matching word/selection
-			set({ "n", "x" }, "<leader>n", function()
-				mc.matchAddCursor(1)
-			end)
-			set({ "n", "x" }, "<leader>s", function()
-				mc.matchSkipCursor(1)
-			end)
-			set({ "n", "x" }, "<leader>N", function()
-				mc.matchAddCursor(-1)
-			end)
-			set({ "n", "x" }, "<leader>S", function()
-				mc.matchSkipCursor(-1)
-			end)
-
+			end, { desc = "Add cursor below" })
 			-- Add and remove cursors with control + left click.
 			set("n", "<c-leftmouse>", mc.handleMouse)
 			set("n", "<c-leftdrag>", mc.handleMouseDrag)
 			set("n", "<c-leftrelease>", mc.handleMouseRelease)
 
 			-- Disable and enable cursors.
-			set({ "n", "x" }, "<c-q>", mc.toggleCursor)
+			-- set({ "n", "x" }, "<c-q>", mc.toggleCursor)
 
 			-- Mappings defined in a keymap layer only apply when there are
 			-- multiple cursors. This lets you have overlapping mappings.
@@ -259,9 +265,6 @@ require("lazy").setup({
 				-- Select a different cursor as the main one.
 				layerSet({ "n", "x" }, "<left>", mc.prevCursor)
 				layerSet({ "n", "x" }, "<right>", mc.nextCursor)
-
-				-- Delete the main cursor.
-				layerSet({ "n", "x" }, "<leader>x", mc.deleteCursor)
 
 				-- Enable and clear cursors using escape.
 				layerSet("n", "<esc>", function()
@@ -372,16 +375,24 @@ require("lazy").setup({
 			},
 
 			-- Document existing key chains
+
+			-- LABELS
+			-- ██╗      █████╗ ██████╗ ███████╗██╗     ███████╗
+			-- ██║     ██╔══██╗██╔══██╗██╔════╝██║     ██╔════╝
+			-- ██║     ███████║██████╔╝█████╗  ██║     ███████╗
+			-- ██║     ██╔══██║██╔══██╗██╔══╝  ██║     ╚════██║
+			-- ███████╗██║  ██║██████╔╝███████╗███████╗███████║
+			-- ╚══════╝╚═╝  ╚═╝╚═════╝ ╚══════╝╚══════╝╚══════╝
 			spec = {
 				{ "<leader>s", group = "[S]earch" },
 				{ "<leader>t", group = "[T]oggle" },
 				{ "<leader>h", group = "Git [H]unk", mode = { "n", "v" } },
+				{ "<leader>c", group = "[C]ode AI" },
 			},
 		},
 	},
 
 	-- NOTE: Plugins can specify dependencies.
-	--
 	-- The dependencies are proper plugin specifications as well - anything
 	-- you do for a plugin at the top level, you can do for a dependency.
 	--
@@ -411,26 +422,13 @@ require("lazy").setup({
 			{ "nvim-tree/nvim-web-devicons", enabled = vim.g.have_nerd_font },
 		},
 		config = function()
-			-- Telescope is a fuzzy finder that comes with a lot of different things that
-			-- it can fuzzy find! It's more than just a "file finder", it can search
-			-- many different aspects of Neovim, your workspace, LSP, and more!
-			--
-			-- The easiest way to use Telescope, is to start by doing something like:
 			--  :Telescope help_tags
-			--
-			-- After running this command, a window will open up and you're able to
-			-- type in the prompt window. You'll see a list of `help_tags` options and
-			-- a corresponding preview of the help.
-			--
 			-- Two important keymaps to use while in Telescope are:
 			--  - Insert mode: <c-/>
 			--  - Normal mode: ?
-			--
 			-- This opens a window that shows you all of the keymaps for the current
 			-- Telescope picker. This is really useful to discover what Telescope can
 			-- do as well as how to actually do it!
-
-			-- [[ Configure Telescope ]]
 			-- See `:help telescope` and `:help telescope.setup()`
 			require("telescope").setup({
 				-- You can put your default mappings / updates / etc. in here
@@ -455,6 +453,20 @@ require("lazy").setup({
 
 			-- See `:help telescope.builtin`
 			local builtin = require("telescope.builtin")
+
+			-- ██╗  ██╗███████╗██╗   ██╗██████╗ ██╗███╗   ██╗██████╗ ███████╗
+			-- ██║ ██╔╝██╔════╝╚██╗ ██╔╝██╔══██╗██║████╗  ██║██╔══██╗██╔════╝
+			-- █████╔╝ █████╗   ╚████╔╝ ██████╔╝██║██╔██╗ ██║██║  ██║███████╗
+			-- ██╔═██╗ ██╔══╝    ╚██╔╝  ██╔══██╗██║██║╚██╗██║██║  ██║╚════██║
+			-- ██║  ██╗███████╗   ██║   ██████╔╝██║██║ ╚████║██████╔╝███████║
+			-- ╚═╝  ╚═╝╚══════╝   ╚═╝   ╚═════╝ ╚═╝╚═╝  ╚═══╝╚═════╝ ╚══════╝
+			-- NOTE: [INFO] this is already bound to <Tab> in the codecompanion plugin
+			-- vim.keymap.set("n", "<leader>cc", function()
+			-- 	require("codecompanion").toggle()
+			-- end, { desc = "[C]ode [C]hat" })
+			-- vim.keymap.set("n", "<leader>cC", "<cmd>CodeCompanion<CR>", { desc = "[C]ode [C]hat" })
+
+			-- SEARCH KEYMAPS ACTUALLY USWEFUL YK
 			vim.keymap.set("n", "<leader>sh", builtin.help_tags, { desc = "[S]earch [H]elp" })
 			vim.keymap.set("n", "<leader>sk", builtin.keymaps, { desc = "[S]earch [K]eymaps" })
 			vim.keymap.set("n", "<leader>sf", builtin.find_files, { desc = "[S]earch [F]iles" })
@@ -921,7 +933,6 @@ require("lazy").setup({
 	{ -- You can easily change to a different colorscheme.
 		-- Change the name of the colorscheme plugin below, and then
 		-- change the command in the config to whatever the name of that colorscheme is.
-		--
 		-- If you want to see what colorschemes are already installed, you can use `:Telescope colorscheme`.
 		"folke/tokyonight.nvim",
 		priority = 1000, -- Make sure to load this before all the other start plugins.
@@ -964,7 +975,8 @@ require("lazy").setup({
 			-- - saiw) - [S]urround [A]dd [I]nner [W]ord [)]Paren
 			-- - sd'   - [S]urround [D]elete [']quotes
 			-- - sr)'  - [S]urround [R]eplace [)] [']
-			require("mini.surround").setup()
+
+			-- require("mini.surround").setup()
 
 			-- Simple and easy statusline.
 			--  You could remove this setup call if you don't like it,
@@ -1041,7 +1053,6 @@ require("lazy").setup({
 
 	-- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
 	--    This is the easiest way to modularize your config.
-	--
 	--  Uncomment the following line and add your plugins to `lua/custom/plugins/*.lua` to get going.
 	-- { import = 'custom.plugins' },
 	--
