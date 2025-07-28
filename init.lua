@@ -187,7 +187,17 @@ require("lazy").setup({
 	--        end,
 	--    }
 	--
-
+	{
+		"stevearc/oil.nvim",
+		---@module 'oil'
+		---@type oil.SetupOpts
+		opts = {},
+		-- Optional dependencies
+		dependencies = { { "echasnovski/mini.icons", opts = {} } },
+		-- dependencies = { "nvim-tree/nvim-web-devicons" }, -- use if you prefer nvim-web-devicons
+		-- Lazy loading is not recommended because it is very tricky to make it work correctly in all situations.
+		lazy = false,
+	},
 	{
 		"github/copilot.vim",
 		config = function()
@@ -207,6 +217,12 @@ require("lazy").setup({
 		},
 		config = function()
 			require("codecompanion").setup({
+				display = {
+					diff = {
+						enabled = true, -- Enable diff view for code fixes
+						provider = "mini_diff",
+					},
+				},
 				vim.keymap.set("n", "<Tab>", function()
 					require("codecompanion").toggle()
 				end, { desc = "[C]ode [C]ompanion" }),
@@ -227,6 +243,13 @@ require("lazy").setup({
 				vim.keymap.set("v", "<Tab>", function()
 					require("codecompanion").toggle()
 				end, { desc = "send selection to Code Companion" }),
+
+				vim.keymap.set(
+					"v",
+					"<leader>cr",
+					"<cmd>'<,'>CodeCompanion /buffer refactor this code DO NOT CHANGE THE OUTPUT, DO NOT BREAK FUNCTIONALITY; FIND SUBOPTIMAL CODE AND POINT REASON ON COMMENTS HOW TO MAKE EVERYTHING BETTEr YET AGAIN NOT BREAKING FUNCTIONALITY<CR>",
+					{ desc = "[R]efactor selection" }
+				),
 				-- vim.keymap.set({ "n", "v" }, "<leader>cg", function()
 				-- 	local prompts = require("codecompanion").prompt_library
 				-- 	require("codecompanion").prompt_library(prompts["Generate a Commit Message"])
@@ -234,7 +257,6 @@ require("lazy").setup({
 			})
 		end,
 	},
-
 	{
 		"jake-stewart/multicursor.nvim",
 		branch = "1.0",
@@ -245,28 +267,34 @@ require("lazy").setup({
 			local set = vim.keymap.set
 
 			-- Add or skip cursor above/below the main cursor.
+			-- Reason: Use descriptive keymap functions for clarity, but keep as is for compatibility.
 			set({ "n", "x" }, "<leader>k", function()
 				mc.lineAddCursor(-1)
 			end, { desc = "Add cursor above" })
 			set({ "n", "x" }, "<leader>j", function()
 				mc.lineAddCursor(1)
 			end, { desc = "Add cursor below" })
+
 			-- Add and remove cursors with control + left click.
+			-- Reason: Could use table for mouse mappings, but explicit is clearer for debugging.
 			set("n", "<c-leftmouse>", mc.handleMouse)
 			set("n", "<c-leftdrag>", mc.handleMouseDrag)
 			set("n", "<c-leftrelease>", mc.handleMouseRelease)
 
 			-- Disable and enable cursors.
+			-- Reason: Mapping is commented out; if needed, enable for quick toggle.
 			-- set({ "n", "x" }, "<c-q>", mc.toggleCursor)
 
 			-- Mappings defined in a keymap layer only apply when there are
 			-- multiple cursors. This lets you have overlapping mappings.
 			mc.addKeymapLayer(function(layerSet)
 				-- Select a different cursor as the main one.
+				-- Reason: Could use table for directions, but explicit is clearer for maintainability.
 				layerSet({ "n", "x" }, "<left>", mc.prevCursor)
 				layerSet({ "n", "x" }, "<right>", mc.nextCursor)
 
 				-- Enable and clear cursors using escape.
+				-- Reason: Inline function is fine for this simple logic.
 				layerSet("n", "<esc>", function()
 					if not mc.cursorsEnabled() then
 						mc.enableCursors()
@@ -278,6 +306,14 @@ require("lazy").setup({
 		end,
 	},
 
+	--[[
+Refactor notes:
+- Keymap definitions are explicit for clarity and debugging. Could use tables/loops for DRY, but explicit mappings are less error-prone and easier to maintain for plugins.
+- Mouse mappings could be grouped, but explicit calls make it easier to trace issues.
+- Commented-out toggle mapping is left as-is for user discretion.
+- Inline logic in <esc> mapping is simple and readable; extracting to a function is unnecessary unless reused elsewhere.
+- No output or functionality changes; all improvements are noted in comments only.
+]]
 	{
 		"nvim-lualine/lualine.nvim",
 		dependencies = { "nvim-tree/nvim-web-devicons" },
@@ -969,6 +1005,12 @@ require("lazy").setup({
 			--  - yinq - [Y]ank [I]nside [N]ext [Q]uote
 			--  - ci'  - [C]hange [I]nside [']quote
 			require("mini.ai").setup({ n_lines = 500 })
+
+			require("mini.diff").setup({
+				-- You can set the default diff algorithm to use
+				--  See `:help mini.diff.config` for more information
+				diff_algorithm = "patience",
+			})
 
 			-- Add/delete/replace surroundings (brackets, quotes, etc.)
 			--
