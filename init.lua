@@ -193,8 +193,8 @@ require("lazy").setup({
 		---@type oil.SetupOpts
 		opts = {},
 		-- Optional dependencies
-		dependencies = { { "echasnovski/mini.icons", opts = {} } },
-		-- dependencies = { "nvim-tree/nvim-web-devicons" }, -- use if you prefer nvim-web-devicons
+		-- dependencies = { { "echasnovski/mini.icons", opts = {} } },
+		dependencies = { "nvim-tree/nvim-web-devicons" }, -- use if you prefer nvim-web-devicons
 		-- Lazy loading is not recommended because it is very tricky to make it work correctly in all situations.
 		lazy = false,
 	},
@@ -328,7 +328,14 @@ Refactor notes:
 				sections = {
 					lualine_a = { "mode" },
 					lualine_b = { "branch", "diff" },
-					lualine_c = { "filename" },
+					lualine_c = {
+						"filename",
+						{
+							"datetime",
+							style = "%I:%M %p", -- 12-hour format with AM/PM
+						},
+						"filesize",
+					},
 					lualine_x = { "diagnostics", "encoding", "fileformat" },
 					lualine_y = { "progress" },
 					lualine_z = { "location" },
@@ -967,23 +974,18 @@ Refactor notes:
 	},
 
 	{ -- You can easily change to a different colorscheme.
-		-- Change the name of the colorscheme plugin below, and then
-		-- change the command in the config to whatever the name of that colorscheme is.
-		-- If you want to see what colorschemes are already installed, you can use `:Telescope colorscheme`.
-		"folke/tokyonight.nvim",
+		"rebelot/kanagawa.nvim",
 		priority = 1000, -- Make sure to load this before all the other start plugins.
 		config = function()
 			---@diagnostic disable-next-line: missing-fields
-			require("tokyonight").setup({
-				styles = {
-					comments = { italic = false }, -- Disable italics in comments
-				},
+			require("kanagawa").setup({
+				commentStyle = { italic = false },
 			})
 
 			-- Load the colorscheme here.
 			-- Like many other themes, this one has different styles, and you could load
 			-- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
-			vim.cmd.colorscheme("tokyonight-moon")
+			vim.cmd("colorscheme kanagawa-wave")
 		end,
 	},
 
