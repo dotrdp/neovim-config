@@ -105,6 +105,9 @@ vim.keymap.set("n", "<Esc>", "<cmd>nohlsearch<CR>")
 -- Diagnostic keymaps
 vim.keymap.set("n", "gq", vim.diagnostic.setloclist, { desc = "Open diagnostic [Q]uickfix list" })
 
+-- the oil thingy
+vim.keymap.set("n", "-", "<CMD>Oil<CR>", { desc = "Open parent directory" })
+
 -- Exit terminal mode in the builtin terminal with a shortcut that is a bit easier
 -- for people to discover. Otherwise, you normally need to press <C-\><C-n>, which
 -- is not what someone will guess without a bit more experience.
@@ -198,6 +201,7 @@ require("lazy").setup({
 		-- Lazy loading is not recommended because it is very tricky to make it work correctly in all situations.
 		lazy = false,
 	},
+	{ "benomahony/oil-git.nvim", dependencies = { "stevearc/oil.nvim" } },
 	{
 		"github/copilot.vim",
 		config = function()
@@ -208,6 +212,35 @@ require("lazy").setup({
 			vim.g.copilot_no_tab_map = true
 		end,
 	},
+
+	{
+		"nvimdev/dashboard-nvim",
+		event = "VimEnter",
+		config = function()
+			require("dashboard").setup({
+				theme = "hyper",
+				config = {
+					week_header = {
+						enable = true,
+					},
+					shortcut = {
+						{ desc = " Find File", group = "@property", action = "Telescope find_files", key = "f" },
+						{ desc = " File Browser", group = "@property", action = "Oil", key = "b" },
+						{ desc = " Find Text", group = "@property", action = "Telescope live_grep", key = "g" },
+						{ desc = " Recent Files", group = "@property", action = "Telescope oldfiles", key = "r" },
+						{
+							desc = " Config",
+							group = "@property",
+							action = ":e $MYVIMRC",
+							key = "c",
+						},
+					},
+				},
+			})
+		end,
+		dependencies = { { "nvim-tree/nvim-web-devicons" } },
+	},
+
 	{
 		"olimorris/codecompanion.nvim", --https://codecompanion.olimorris.dev
 		opts = {},
@@ -508,11 +541,11 @@ Refactor notes:
 			-- 	require("codecompanion").toggle()
 			-- end, { desc = "[C]ode [C]hat" })
 			-- vim.keymap.set("n", "<leader>cC", "<cmd>CodeCompanion<CR>", { desc = "[C]ode [C]hat" })
-
+			--
 			-- SEARCH KEYMAPS ACTUALLY USWEFUL YK
 			vim.keymap.set("n", "<leader>sh", builtin.help_tags, { desc = "[S]earch [H]elp" })
 			vim.keymap.set("n", "<leader>sk", builtin.keymaps, { desc = "[S]earch [K]eymaps" })
-			vim.keymap.set("n", "<leader>sf", builtin.find_files, { desc = "[S]earch [F]iles" })
+			vim.keymap.set("n", "<leader>sf", "<CMD>Oil --float .<CR>", { desc = "[S]earch [F]iles" })
 			vim.keymap.set("n", "<leader>ss", builtin.builtin, { desc = "[S]earch [S]elect Telescope" })
 			vim.keymap.set("n", "<leader>sw", builtin.grep_string, { desc = "[S]earch current [W]ord" })
 			vim.keymap.set("n", "<leader>sg", builtin.live_grep, { desc = "[S]earch by [G]rep" })
