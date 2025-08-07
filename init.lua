@@ -108,6 +108,17 @@ vim.keymap.set("n", "gq", vim.diagnostic.setloclist, { desc = "Open diagnostic [
 -- the oil thingy
 vim.keymap.set("n", "-", "<CMD>Oil<CR>", { desc = "Open parent directory" })
 
+-- open new nvim on ghostty at current directory
+vim.keymap.set("n", "<Leader>n", function()
+	-- vim.cmd("term nohup ghostty -e nvim . > /dev/null 2>&1") -- > /dev/null 2>&1
+	vim.fn.jobstart("ghostty -e nvim " .. (vim.fn.expand("%:h")) .. " > /dev/null 2>&1 &", {
+		detach = true, -- Detach the job so it runs in the background
+		-- cwd = vim.fn.expand("%:p:h"), -- Set the working directory to the current file's directory
+	})
+	-- vim.cmd("bd")
+	-- vim.api.nvim_feedkeys("y", "n", true)
+end, { desc = "[N]ew nvim terminal" })
+
 -- Exit terminal mode in the builtin terminal with a shortcut that is a bit easier
 -- for people to discover. Otherwise, you normally need to press <C-\><C-n>, which
 -- is not what someone will guess without a bit more experience.
@@ -194,7 +205,11 @@ require("lazy").setup({
 		"stevearc/oil.nvim",
 		---@module 'oil'
 		---@type oil.SetupOpts
-		opts = {},
+		opts = {
+			view_options = {
+				show_hidden = true, -- Show hidden files
+			},
+		},
 		-- Optional dependencies
 		-- dependencies = { { "echasnovski/mini.icons", opts = {} } },
 		dependencies = { "nvim-tree/nvim-web-devicons" }, -- use if you prefer nvim-web-devicons
@@ -205,7 +220,7 @@ require("lazy").setup({
 	{
 		"github/copilot.vim",
 		config = function()
-			vim.keymap.set("i", "<C-ñ>", 'copilot#Accept("\\<CR>")', {
+			vim.keymap.set("i", "<C-;>", 'copilot#Accept("\\<CR>")', {
 				expr = true,
 				replace_keycodes = false,
 			})
@@ -338,15 +353,42 @@ require("lazy").setup({
 			end)
 		end,
 	},
-
-	--[[
-Refactor notes:
-- Keymap definitions are explicit for clarity and debugging. Could use tables/loops for DRY, but explicit mappings are less error-prone and easier to maintain for plugins.
-- Mouse mappings could be grouped, but explicit calls make it easier to trace issues.
-- Commented-out toggle mapping is left as-is for user discretion.
-- Inline logic in <esc> mapping is simple and readable; extracting to a function is unnecessary unless reused elsewhere.
-- No output or functionality changes; all improvements are noted in comments only.
-]]
+	{
+		"dotrdp/direnv.nvim",
+		dependencies = { "sstevearc/oil.nvim" },
+		config = function()
+			require("direnv").setup({
+				statusline = {
+					enabled = true, -- Enable statusline integration
+					icon = "",
+				},
+				oilnvim = {
+					enabled = true, -- Enable oil.nvim integration
+				},
+				autoload_direnv = true,
+			})
+		end,
+	},
+	{
+		"kylechui/nvim-surround",
+		version = "^3.0.0", -- Use for stability; omit to use `main` branch for the latest features
+		event = "VeryLazy",
+		config = function()
+			require("nvim-surround").setup({
+				-- Configuration here, or leave empty to use defaults
+			})
+		end,
+	},
+	{
+		"Wansmer/treesj",
+		dependencies = { "nvim-treesitter/nvim-treesitter" }, -- if you install parsers with `nvim-treesitter`
+		config = function()
+			require("treesj").setup({
+				use_default_keymaps = false,
+				max_join_length = 1000,
+			})
+		end,
+	},
 	{
 		"nvim-lualine/lualine.nvim",
 		dependencies = { "nvim-tree/nvim-web-devicons" },
@@ -354,22 +396,42 @@ Refactor notes:
 			require("lualine").setup({
 				options = {
 					icons_enabled = vim.g.have_nerd_font,
-					theme = "auto", -- Use 'auto' to automatically select the theme based on your colorscheme
-					component_separators = { left = "", right = "" },
-					section_separators = { left = "", right = "" },
+					theme = "auto",
+					section_separators = { left = "", right = "" },
+					component_separators = { left = "", right = "" },
 				},
 				sections = {
-					lualine_a = { "mode" },
-					lualine_b = { "branch", "diff" },
-					lualine_c = {
-						"filename",
-						{
-							"datetime",
-							style = "%I:%M %p", -- 12-hour format with AM/PM
-						},
-						"filesize",
+					lualine_a = { { "datetime", style = "%I:%M:%S %p" } },
+					lualine_b = {
+						{ "branch", color = "black" },
+						{ "diff", symbols = { added = "", modified = "", removed = "" } },
 					},
-					lualine_x = { "diagnostics", "encoding", "fileformat" },
+					lualine_c = {
+						"filesize",
+						{
+							"buffers",
+							symbols = {
+								modified = " ", -- Text to show when the buffer is modified
+								alternate_file = "#", -- Text to show to identify the alternate file
+								directory = "",
+							},
+						},
+						--
+						function()
+							return require("direnv").statusline()
+						end,
+					},
+
+					lualine_x = {
+						"diagnostics",
+						"encoding",
+						{
+							function()
+								return ""
+							end,
+							color = { fg = "06D7FF" }, -- Set color for the icon
+						},
+					},
 					lualine_y = { "progress" },
 					lualine_z = { "location" },
 				},
@@ -461,9 +523,17 @@ Refactor notes:
 			-- ╚══════╝╚═╝  ╚═╝╚═════╝ ╚══════╝╚══════╝╚══════╝
 			spec = {
 				{ "<leader>s", group = "[S]earch" },
-				{ "<leader>t", group = "[T]oggle" },
+				-- { "<leader>t", group = "[T]oggle" },
 				{ "<leader>h", group = "Git [H]unk", mode = { "n", "v" } },
-				{ "<leader>c", group = "[C]ode AI" },
+				{ "<leader>c", group = "[C]ode AI", mode = { "n", "v" } },
+				{
+					"<leader>d",
+					group = "[D]irenv",
+				},
+				{
+					"<leader>t",
+					group = "[T]ree utils",
+				},
 			},
 		},
 	},
@@ -545,7 +615,17 @@ Refactor notes:
 			-- SEARCH KEYMAPS ACTUALLY USWEFUL YK
 			vim.keymap.set("n", "<leader>sh", builtin.help_tags, { desc = "[S]earch [H]elp" })
 			vim.keymap.set("n", "<leader>sk", builtin.keymaps, { desc = "[S]earch [K]eymaps" })
-			vim.keymap.set("n", "<leader>sf", "<CMD>Oil --float .<CR>", { desc = "[S]earch [F]iles" })
+			vim.keymap.set(
+				"n",
+				"<leader>sf",
+				"<CMD>Oil --float " .. vim.fn.expand("%:h") .. "<CR>",
+				{ desc = "[S]earch [F]iles" }
+			)
+
+			vim.keymap.set("n", "<leader>tj", function()
+				require("treesj").toggle()
+			end, { desc = "[J]oin/Unjoin lines" })
+
 			vim.keymap.set("n", "<leader>ss", builtin.builtin, { desc = "[S]earch [S]elect Telescope" })
 			vim.keymap.set("n", "<leader>sw", builtin.grep_string, { desc = "[S]earch current [W]ord" })
 			vim.keymap.set("n", "<leader>sg", builtin.live_grep, { desc = "[S]earch by [G]rep" })
@@ -747,9 +827,9 @@ Refactor notes:
 						client
 						and client_supports_method(client, vim.lsp.protocol.Methods.textDocument_inlayHint, event.buf)
 					then
-						map("<leader>th", function()
+						map("<leader>ih", function()
 							vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled({ bufnr = event.buf }))
-						end, "[T]oggle Inlay [H]ints")
+						end, "Toggle [I]nlay [H]ints")
 					end
 				end,
 			})
@@ -1021,6 +1101,20 @@ Refactor notes:
 			vim.cmd("colorscheme kanagawa-wave")
 		end,
 	},
+	-- {
+	-- 	"dupeiran001/nord.nvim",
+	-- 	lazy = false,
+	-- 	priority = 1000,
+	-- 	config = function()
+	-- 		---@diagnostic disable-next-line: missing-fields
+	-- 		require("nord").setup({
+	-- 			styles = { italic = false },
+	--
+	-- 		})
+	--
+	-- 		vim.cmd("colorscheme nord")
+	-- 	end,
+	-- },
 
 	-- Highlight todo, notes, etc in comments
 	{
