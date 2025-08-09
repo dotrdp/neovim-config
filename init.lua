@@ -33,6 +33,7 @@ vim.g.have_nerd_font = true
 -- You can also add relative line numbers, to help with jumping.
 --  Experiment for yourself to see if you like it!
 vim.o.relativenumber = true
+vim.o.number = true
 
 -- Enable mouse mode, can be useful for resizing splits for example!
 vim.o.mouse = "a"
@@ -255,7 +256,61 @@ require("lazy").setup({
 		end,
 		dependencies = { { "nvim-tree/nvim-web-devicons" } },
 	},
-
+	{
+		"karb94/neoscroll.nvim",
+		config = function()
+			local neoscroll = require("neoscroll")
+			neoscroll.setup({})
+			neoscroll = require("neoscroll")
+			local keymap = {
+				["<C-u>"] = function()
+					neoscroll.ctrl_u({ duration = 250 })
+				end,
+				["<C-b>"] = function()
+					neoscroll.ctrl_d({ duration = 250 })
+				end,
+				["<PageUp>"] = function()
+					neoscroll.ctrl_b({ duration = 450 })
+				end,
+				["<PageDown>"] = function()
+					neoscroll.ctrl_f({ duration = 450 })
+				end,
+				["<C-y>"] = function()
+					neoscroll.scroll(-0.1, { move_cursor = false, duration = 100 })
+				end,
+				["<C-e>"] = function()
+					neoscroll.scroll(0.1, { move_cursor = false, duration = 100 })
+				end,
+				["zt"] = function()
+					neoscroll.zt({ half_win_duration = 250 })
+				end,
+				["zz"] = function()
+					neoscroll.zz({ half_win_duration = 250 })
+				end,
+				["zb"] = function()
+					neoscroll.zb({ half_win_duration = 250 })
+				end,
+			}
+			local modes = { "n", "v", "x" }
+			for key, func in pairs(keymap) do
+				vim.keymap.set(modes, key, func)
+			end
+		end,
+	},
+	{
+		"folke/flash.nvim",
+		event = "VeryLazy",
+		---@type Flash.Config
+		opts = {},
+    -- stylua: ignore
+    keys = {
+      { "s", mode = { "n", "x", "o" }, function() require("flash").jump() end, desc = "Flash" },
+      { "S", mode = { "n", "x", "o" }, function() require("flash").treesitter() end, desc = "Flash Treesitter" },
+      { "r", mode = "o", function() require("flash").remote() end, desc = "Remote Flash" },
+      { "R", mode = { "o", "x" }, function() require("flash").treesitter_search() end, desc = "Treesitter Search" },
+      { "<c-s>", mode = { "c" }, function() require("flash").toggle() end, desc = "Toggle Flash Search" },
+    },
+	},
 	{
 		"olimorris/codecompanion.nvim", --https://codecompanion.olimorris.dev
 		opts = {},
@@ -386,6 +441,26 @@ require("lazy").setup({
 			require("treesj").setup({
 				use_default_keymaps = false,
 				max_join_length = 1000,
+			})
+		end,
+	},
+	-- {
+	-- 	"m4xshen/hardtime.nvim",
+	-- 	lazy = false,
+	-- 	dependencies = { "MunifTanjim/nui.nvim" },
+	-- 	opts = {},
+	-- },
+	{
+		"bassamsdata/namu.nvim",
+		config = function()
+			-- === Suggested Keymaps: ===
+			vim.keymap.set("n", "<leader>ss", ":Namu symbols<cr>", {
+				desc = "Jump to LSP symbol",
+				silent = true,
+			})
+			vim.keymap.set("n", "<leader>sw", ":Namu workspace<cr>", {
+				desc = "LSP Symbols - Workspace",
+				silent = true,
 			})
 		end,
 	},
@@ -626,12 +701,12 @@ require("lazy").setup({
 				require("treesj").toggle()
 			end, { desc = "[J]oin/Unjoin lines" })
 
-			vim.keymap.set("n", "<leader>ss", builtin.builtin, { desc = "[S]earch [S]elect Telescope" })
-			vim.keymap.set("n", "<leader>sw", builtin.grep_string, { desc = "[S]earch current [W]ord" })
-			vim.keymap.set("n", "<leader>sg", builtin.live_grep, { desc = "[S]earch by [G]rep" })
-			vim.keymap.set("n", "<leader>sd", builtin.diagnostics, { desc = "[S]earch [D]iagnostics" })
-			vim.keymap.set("n", "<leader>sr", builtin.resume, { desc = "[S]earch [R]esume" })
-			vim.keymap.set("n", "<leader>s.", builtin.oldfiles, { desc = '[S]earch Recent Files ("." for repeat)' })
+			-- vim.keymap.set("n", "<leader>ss", builtin.builtin, { desc = "[S]earch [S]elect Telescope" })
+			-- vim.keymap.set("n", "<leader>sw", builtin.grep_string, { desc = "[S]earch current [W]ord" })
+			-- vim.keymap.set("n", "<leader>sg", builtin.live_grep, { desc = "[S]earch by [G]rep" })
+			-- vim.keymap.set("n", "<leader>sd", builtin.diagnostics, { desc = "[S]earch [D]iagnostics" })
+			-- vim.keymap.set("n", "<leader>sr", builtin.resume, { desc = "[S]earch [R]esume" })
+			-- vim.keymap.set("n", "<leader>s.", builtin.oldfiles, { desc = '[S]earch Recent Files ("." for repeat)' })
 			vim.keymap.set("n", "<leader><leader>", builtin.buffers, { desc = "[ ] Find existing buffers" })
 
 			-- Slightly advanced example of overriding default behavior and theme
