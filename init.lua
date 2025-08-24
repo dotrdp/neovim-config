@@ -154,6 +154,13 @@ vim.api.nvim_create_autocmd("TextYankPost", {
 	end,
 })
 
+vim.api.nvim_create_autocmd({ "BufEnter", "BufWinEnter" }, {
+	pattern = { "*.typ" },
+	callback = function()
+		require("typst-preview").start()
+	end,
+})
+
 -- [[ Install `lazy.nvim` plugin manager ]]
 --    See `:help lazy.nvim.txt` or https://github.com/folke/lazy.nvim for more info
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
@@ -183,6 +190,17 @@ rtp:prepend(lazypath)
 require("lazy").setup({
 	-- NOTE: Plugins can be added with a link (or for a github repo: 'owner/repo' link).
 	"NMAC427/guess-indent.nvim", -- Detect tabstop and shiftwidth automatically
+	{
+		"folke/snacks.nvim",
+		---@type snacks.Config
+		opts = {
+			image = {
+				-- your image configuration comes here
+				-- or leave it empty to use the default settings
+				-- refer to the configuration section below
+			},
+		},
+	},
 
 	-- NOTE: Plugins can also be added by using a table,
 	-- with the first argument being the link and the following
@@ -229,6 +247,17 @@ require("lazy").setup({
 		end,
 	},
 
+	{
+		"AntonVanAssche/music-controls.nvim",
+		opts = {
+			default_player = "vivaldi",
+		},
+		config = function()
+			require("music-controls").setup({
+				default_player = "vivaldi",
+			})
+		end,
+	},
 	{
 		"nvimdev/dashboard-nvim",
 		event = "VimEnter",
@@ -465,6 +494,12 @@ require("lazy").setup({
 		end,
 	},
 	{
+		"al-kot/typst-preview.nvim",
+		opts = {
+			-- your config here
+		},
+	},
+	{
 		"nvim-lualine/lualine.nvim",
 		dependencies = { "nvim-tree/nvim-web-devicons" },
 		config = function()
@@ -476,7 +511,13 @@ require("lazy").setup({
 					component_separators = { left = "", right = "" },
 				},
 				sections = {
-					lualine_a = { { "datetime", style = "%I:%M:%S %p" } },
+					lualine_a = {
+						{
+							"datetime",
+							style = "%I:%M:%S %p",
+							color = { bg = "#FF5F1F" },
+						},
+					},
 					lualine_b = {
 						{ "branch", color = "black" },
 						{ "diff", symbols = { added = "", modified = "", removed = "" } },
@@ -498,6 +539,13 @@ require("lazy").setup({
 					},
 
 					lualine_x = {
+						{
+							require("music-controls")._statusline,
+							on_click = function()
+								local music_controls = require("music-controls")
+								require("music-controls").play()
+							end,
+						},
 						"diagnostics",
 						"encoding",
 						{
@@ -505,6 +553,12 @@ require("lazy").setup({
 								return ""
 							end,
 							color = { fg = "06D7FF" }, -- Set color for the icon
+							on_click = function()
+								if (vim.fn.expand("%")):find(".typ") then
+									local prev = require("typst-preview")
+									prev.refresh()
+								end
+							end,
 						},
 					},
 					lualine_y = { "progress" },
@@ -601,6 +655,7 @@ require("lazy").setup({
 				-- { "<leader>t", group = "[T]oggle" },
 				{ "<leader>h", group = "Git [H]unk", mode = { "n", "v" } },
 				{ "<leader>c", group = "[C]ode AI", mode = { "n", "v" } },
+				{ "}<leader>'", group = "[t]ypst" },
 				{
 					"<leader>d",
 					group = "[D]irenv",
@@ -700,6 +755,34 @@ require("lazy").setup({
 			vim.keymap.set("n", "<leader>tj", function()
 				require("treesj").toggle()
 			end, { desc = "[J]oin/Unjoin lines" })
+
+			vim.keymap.set("n", "<leader>'s", function()
+				require("typst-preview").start()
+			end, { desc = "Start Typst preview" })
+
+			vim.keymap.set("n", "<leader>'q", function()
+				require("typst-preview").stop()
+			end, { desc = "Stop Typst preview" })
+
+			vim.keymap.set("n", "<leader>'n", function()
+				require("typst-preview").next_page()
+			end, { desc = "Next page" })
+
+			vim.keymap.set("n", "<leader>'p", function()
+				require("typst-preview").prev_page()
+			end, { desc = "Previous page" })
+
+			vim.keymap.set("n", "<leader>'r", function()
+				require("typst-preview").refresh()
+			end, { desc = "Refresh preview" })
+
+			vim.keymap.set("n", "<leader>'gg", function()
+				require("typst-preview").first_page()
+			end, { desc = "First page" })
+
+			vim.keymap.set("n", "<leader>'G", function()
+				require("typst-preview").last_page()
+			end, { desc = "Last page" })
 
 			-- vim.keymap.set("n", "<leader>ss", builtin.builtin, { desc = "[S]earch [S]elect Telescope" })
 			-- vim.keymap.set("n", "<leader>sw", builtin.grep_string, { desc = "[S]earch current [W]ord" })
@@ -968,6 +1051,8 @@ require("lazy").setup({
 				--
 				nil_ls = {},
 				pyright = {},
+
+				tinymist = {},
 
 				lua_ls = {
 					-- cmd = { ... },
