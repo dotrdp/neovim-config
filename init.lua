@@ -20,6 +20,7 @@
 --  NOTE: Must happen before plugins are loaded (otherwise wrong leader will be used)
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
+vim.opt.spelllang = { "en", "es" }
 
 -- Set to true if you have a Nerd Font installed and selected in the terminal
 vim.g.have_nerd_font = true
@@ -112,7 +113,7 @@ vim.keymap.set("n", "-", "<CMD>Oil<CR>", { desc = "Open parent directory" })
 -- open new nvim on ghostty at current directory
 vim.keymap.set("n", "<Leader>n", function()
 	-- vim.cmd("term nohup ghostty -e nvim . > /dev/null 2>&1") -- > /dev/null 2>&1
-	vim.fn.jobstart("ghostty -e nvim " .. (vim.fn.expand("%:h")) .. " > /dev/null 2>&1 &", {
+	vim.fn.jobstart("ghostty --gtk-titlebar=false -e nvim " .. (vim.fn.expand("%:h")) .. " > /dev/null 2>&1 &", {
 		detach = true, -- Detach the job so it runs in the background
 		-- cwd = vim.fn.expand("%:p:h"), -- Set the working directory to the current file's directory
 	})
@@ -154,12 +155,12 @@ vim.api.nvim_create_autocmd("TextYankPost", {
 	end,
 })
 
-vim.api.nvim_create_autocmd({ "BufEnter", "BufWinEnter" }, {
-	pattern = { "*.typ" },
-	callback = function()
-		require("typst-preview").start()
-	end,
-})
+-- vim.api.nvim_create_autocmd({ "BufEnter", "BufWinEnter" }, {
+-- 	pattern = { "*.typ" },
+-- 	callback = function()
+-- 		require("typst-preview").start()
+-- 	end,
+-- })
 
 -- [[ Install `lazy.nvim` plugin manager ]]
 --    See `:help lazy.nvim.txt` or https://github.com/folke/lazy.nvim for more info
@@ -233,7 +234,7 @@ require("lazy").setup({
 		-- dependencies = { { "echasnovski/mini.icons", opts = {} } },
 		dependencies = { "nvim-tree/nvim-web-devicons" }, -- use if you prefer nvim-web-devicons
 		-- Lazy loading is not recommended because it is very tricky to make it work correctly in all situations.
-		lazy = false,
+		lazy = true,
 	},
 	{ "benomahony/oil-git.nvim", dependencies = { "stevearc/oil.nvim" } },
 	{
@@ -493,11 +494,40 @@ require("lazy").setup({
 			})
 		end,
 	},
+	-- {
+	-- 	"al-kot/typst-preview.nvim",
+	-- 	opts = {
+	-- 		-- your config here
+	-- 	},
+	-- },
 	{
-		"al-kot/typst-preview.nvim",
-		opts = {
-			-- your config here
-		},
+		"chomosuke/typst-preview.nvim",
+		lazy = false, -- or ft = 'typst'
+		version = "1.*",
+		opts = {}, -- lazy.nvim will implicitly calls `setup {}`
+	},
+	{
+		"nvim-orgmode/orgmode",
+		event = "VeryLazy",
+		ft = { "org" },
+		config = function()
+			-- Setup orgmode
+			require("orgmode").setup({
+				org_agenda_files = "~/Sync/**/*",
+				org_default_notes_file = "~/Sync/refile.org",
+			})
+
+			-- NOTE: If you are using nvim-treesitter with ~ensure_installed = "all"~ option
+			-- add ~org~ to ignore_install
+			-- require("nvim-treesitter.configs").setup({
+			-- 	ensure_installed = "all",
+			-- 	ignore_install = { "org" },
+			-- })
+		end,
+	},
+	{
+		"akinsho/org-bullets.nvim",
+		opts = {},
 	},
 	{
 		"nvim-lualine/lualine.nvim",
@@ -655,7 +685,7 @@ require("lazy").setup({
 				-- { "<leader>t", group = "[T]oggle" },
 				{ "<leader>h", group = "Git [H]unk", mode = { "n", "v" } },
 				{ "<leader>c", group = "[C]ode AI", mode = { "n", "v" } },
-				{ "}<leader>'", group = "[t]ypst" },
+				{ "<leader>o", group = "[O]rg mode", mode = { "n", "v" } },
 				{
 					"<leader>d",
 					group = "[D]irenv",
@@ -755,34 +785,6 @@ require("lazy").setup({
 			vim.keymap.set("n", "<leader>tj", function()
 				require("treesj").toggle()
 			end, { desc = "[J]oin/Unjoin lines" })
-
-			vim.keymap.set("n", "<leader>'s", function()
-				require("typst-preview").start()
-			end, { desc = "Start Typst preview" })
-
-			vim.keymap.set("n", "<leader>'q", function()
-				require("typst-preview").stop()
-			end, { desc = "Stop Typst preview" })
-
-			vim.keymap.set("n", "<leader>'n", function()
-				require("typst-preview").next_page()
-			end, { desc = "Next page" })
-
-			vim.keymap.set("n", "<leader>'p", function()
-				require("typst-preview").prev_page()
-			end, { desc = "Previous page" })
-
-			vim.keymap.set("n", "<leader>'r", function()
-				require("typst-preview").refresh()
-			end, { desc = "Refresh preview" })
-
-			vim.keymap.set("n", "<leader>'gg", function()
-				require("typst-preview").first_page()
-			end, { desc = "First page" })
-
-			vim.keymap.set("n", "<leader>'G", function()
-				require("typst-preview").last_page()
-			end, { desc = "Last page" })
 
 			-- vim.keymap.set("n", "<leader>ss", builtin.builtin, { desc = "[S]earch [S]elect Telescope" })
 			-- vim.keymap.set("n", "<leader>sw", builtin.grep_string, { desc = "[S]earch current [W]ord" })
@@ -1347,6 +1349,7 @@ require("lazy").setup({
 				"vim",
 				"vimdoc",
 			},
+			ignore_install = { "org" },
 			-- Autoinstall languages that are not installed
 			auto_install = true,
 			highlight = {
