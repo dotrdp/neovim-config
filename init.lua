@@ -570,11 +570,13 @@ require("lazy").setup({
 
 					lualine_x = {
 						{
-							require("music-controls")._statusline,
-							on_click = function()
-								local music_controls = require("music-controls")
-								require("music-controls").play()
+							function()
+								return vim.g.remote_neovim_host and ("Remote: %s"):format(vim.uv.os_gethostname())
+									or "󰣀"
 							end,
+							padding = { right = 1, left = 1 },
+							separator = { left = "", right = "" },
+							on_click = function() end,
 						},
 						"diagnostics",
 						"encoding",
@@ -1052,7 +1054,8 @@ require("lazy").setup({
 				-- ts_ls = {},
 				--
 				nil_ls = {},
-				pyright = {},
+				-- pyright = {},
+				mypy = {},
 
 				tinymist = {},
 
