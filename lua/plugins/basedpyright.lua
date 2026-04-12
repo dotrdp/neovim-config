@@ -3,6 +3,7 @@ return {
   opts = {
     servers = {
       basedpyright = {
+        mason = false,
         settings = {
           basedpyright = {
             analysis = {
